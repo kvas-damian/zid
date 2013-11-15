@@ -14,11 +14,11 @@
 
 // Zid magic
 
-(function ($) {
+( function( $ ) {
 	'use strict';
-	var Zid = function (options, element) {
-		this.element = $(element);
-		this._init(options);
+	var Zid = function( options, element ) {
+		this.element = $( element );
+		this._init( options );
 	};
 
 	Zid.settings = {
@@ -29,13 +29,13 @@
 
 	Zid.prototype = {
 
-		_init: function (options) {
+		_init: function( options ) {
 			var container = this;
 			this.cols = 0;
-			this.name = Math.random().toString(36).substr(7);
+			this.name = Math.random().toString( 36 ).substr( 7 );
 			this.box = this.element;
-			this.options = $.extend(true, {}, Zid.settings, options);
-			this.itemsArr = $.makeArray(this.box.find(this.options.selector));
+			this.options = $.extend( true, {}, Zid.settings, options );
+			this.itemsArr = $.makeArray( this.box.find( this.options.selector ) );
 			this.isResizing = false;
 			this.minBreakPoint = 1;
 			this.maxBreakPoint = 1;
@@ -45,76 +45,79 @@
 			// build columns
 			this._setCols();
 			// render items in columns
-			this._renderItems('append', this.itemsArr);
+			this._renderItems( 'append', this.itemsArr );
 			// add class 'zid' to container
-			$(this.box).addClass('zid');
+			$( this.box ).addClass( 'zid' );
 			// bind on resize
-			$(window).on('resize', $.debounce(50, $.proxy(container.resize, this)));
+			$( window ).on( 'resize', $.debounce( 50, $.proxy( container.resize, this ) ) );
 		},
 
-		_setCols: function () {
+		_setCols: function() {
 			var i,
 				div,
-				clear = $('<div></div>').css({
+				clear = $( '<div></div>' ).css( {
 					'clear': 'both',
 					'height': '0',
 					'width': '0',
 					'display': 'block'
-				}).attr('id', 'clear' + this.name);
+				} ).attr( 'id', 'clear' + this.name );
 			// calculate columns count
-			this.cols = Math.floor(this.box.width() / (this.options.width + this.options.gutter));
+			this.cols = Math.floor( this.box.width() / ( this.options.width + this.options.gutter ) );
 			// We should always render at least one column
-			if (this.cols < 1) {
+			if ( this.cols < 1 ) {
 				this.cols = 1;
 			}
 			// add columns to box
-			for (i = 0; i < this.cols; i++) {
-				div = $('<div></div>').addClass('zidcolumn').css({
-					'width': 'calc(' + (100 / this.cols) + '% - ' +
-						(((this.cols - 1) * this.options.gutter) / this.cols) + 'px )',
-					'paddingLeft': (i === 0) ? 0 : this.options.gutter,
+			for ( i = 0; i < this.cols; i++ ) {
+				div = $( '<div></div>' ).addClass( 'zidcolumn' ).css( {
+					'width': this._getColumnWidthStyle(),
+					'paddingLeft': ( i === 0 ) ? 0 : this.options.gutter,
 					'paddingBottom': this.options.gutter,
 					'float': 'left'
 				});
-				this.box.append(div);
-				this.columns.push(div);
+				this.box.append( div );
+				this.columns.push( div );
 			}
-			
-			
-			this.box.find($('#clear' + this.name)).remove();
+
+
+			this.box.find( $( '#clear' + this.name ) ).remove();
 			// add clear float
-			this.box.append(clear);
+			this.box.append( clear );
 			this._setbreakPoints();
 		},
 		_setbreakPoints: function() {
-			this.maxBreakPoint = (this.cols + 1) * (this.options.width + this.options.gutter);
-			this.minBreakPoint = (this.cols <= 1) ? 1 : this.cols * (this.options.width + this.options.gutter);
+			this.maxBreakPoint = ( this.cols + 1 ) * ( this.options.width + this.options.gutter );
+			this.minBreakPoint = ( this.cols <= 1 ) ? 1 : this.cols * ( this.options.width + this.options.gutter );
+		},
+		_getColumnWidthStyle: function() {
+			return 'calc(' + ( 100 / this.cols ) + '% - ' +
+				( ( ( this.cols - 1 ) * this.options.gutter ) / this.cols ) + 'px )';
 		},
 
-		_renderItems: function (method, arr) {
+		_renderItems: function( method, arr ) {
 			// push out the items to the columns
-			$.each(arr, $.proxy(
-				function (index, value) {
-					var item = $(value),
+			$.each( arr, $.proxy(
+				function( index, value ) {
+					var item = $( value ),
 						col = this._getLowestColumn();
 					// prepend on append to column
-					if (method === 'prepend') {
-						col.prepend(item);
+					if ( method === 'prepend' ) {
+						col.prepend( item );
 					} else {
-						col.append(item);
+						col.append( item );
 					}
 				},
 				this
 			));
 		},
 
-		_getLowestColumn: function () {
-			var lowest = this.columns[0],
+		_getLowestColumn: function() {
+			var lowest = this.columns[ 0 ],
 				lowestHeight = lowest.height();
 
-			$.each(this.columns, function (index, currentColumn) {
+			$.each( this.columns, function( index, currentColumn ) {
 				var currHeight = currentColumn.height();
-				if (currHeight < lowestHeight) {
+				if ( currHeight < lowestHeight ) {
 					lowest = currentColumn;
 					lowestHeight = currHeight;
 				}
@@ -125,46 +128,46 @@
 
 		repaint: function() {
 			// hide columns in box
-			var oldCols = this.box.find($('.zidcolumn'));
+			var oldCols = this.box.find( $( '.zidcolumn' ) );
 			this.columns = [];
 			// build columns
 			this._setCols();
 			// render items in columns
 			this.isResizing = true;
-			this._renderItems('append', this.itemsArr);
+			this._renderItems( 'append', this.itemsArr );
 			this.isResizing = false;
 			oldCols.remove();
 		},
 
-		resize: function () {
+		resize: function() {
 			var boxWidth = this.box.width();
-			if (boxWidth < this.minBreakPoint || boxWidth >= this.maxBreakPoint) {
+			if ( boxWidth < this.minBreakPoint || boxWidth >= this.maxBreakPoint ) {
 				this.repaint();
 			}
 		},
 
-		append: function (items) {
-			this.itemsArr = this.itemsArr.concat($.makeArray(items));
-			this._renderItems('append', items);
+		append: function( items ) {
+			this.itemsArr = this.itemsArr.concat( $.makeArray( items ) );
+			this._renderItems( 'append', items );
 		},
 
-		prepend: function (items) {
-			this.itemsArr = $.makeArray(items).concat(this.itemsArr);
-			this._renderItems('prepend', items);
+		prepend: function( items ) {
+			this.itemsArr = $.makeArray( items ).concat( this.itemsArr );
+			this._renderItems( 'prepend', items );
 		}
 	};
 
-	$.fn.zid = function (options, e) {
-		if (typeof options === 'string') {
-			this.each(function () {
-				var container = $.data(this, 'zid');
-				container[options].apply(container, [e]);
+	$.fn.zid = function( options, e ) {
+		if ( typeof options === 'string' ) {
+			this.each( function() {
+				var container = $.data( this, 'zid' );
+				container[ options ].apply( container, [ e ] );
 			});
 		} else {
-			this.each(function () {
-				$.data(this, 'zid', new Zid(options, this));
-			});
+			this.each( function() {
+				$.data( this, 'zid', new Zid( options, this ) );
+			} );
 		}
 		return this;
 	};
-})(jQuery);
+} )( jQuery );
