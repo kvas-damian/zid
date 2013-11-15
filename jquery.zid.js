@@ -7,40 +7,10 @@
  * Copyright 2013 Wikia. All rights reserved.
  * ( https://github.com/kvas-damian/zid )
  *
+ * Requires jQuery debounce plugin: http://benalman.com/projects/jquery-throttle-debounce-plugin/
+ *
  */
 
-// Debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-// Copy pasted from http://paulirish.com/2009/throttled-smartresize-jquery-event-handler/
-
-(function ($, sr) {
-	'use strict';
-	var debounce = function (func, threshold, execAsap) {
-		var timeout;
-		return function debounced() {
-			var obj = this,
-				args = arguments;
-
-			function delayed() {
-				if (!execAsap) {
-					func.apply(obj, args);
-				}
-				timeout = null;
-			}
-			if (timeout) {
-				clearTimeout(timeout);
-			}
-			else if (execAsap) {
-				func.apply(obj, args);
-			}
-
-			timeout = setTimeout(delayed, threshold || 50);
-		};
-	};
-	jQuery.fn[sr] = function (fn) {
-		return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr);
-	};
-})(jQuery, 'smartresize');
 
 // Zid magic
 
@@ -62,6 +32,7 @@
 		_init: function (options) {
 			var container = this;
 			this.cols = 0;
+			this.name = Math.random().toString(36).substr(7);
 			this.box = this.element;
 			this.options = $.extend(true, {}, Zid.settings, options);
 			this.itemsArr = $.makeArray(this.box.find(this.options.selector));
@@ -77,10 +48,8 @@
 			this._renderItems('append', this.itemsArr);
 			// add class 'zid' to container
 			$(this.box).addClass('zid');
-			// add smartresize
-			$(window).smartresize(function () {
-				container.resize();
-			});
+			// bind on resize
+			$(window).on('resize', $.debounce(50, $.proxy(container.resize, this)));
 		},
 
 		_setCols: function () {
@@ -91,7 +60,7 @@
 					'height': '0',
 					'width': '0',
 					'display': 'block'
-				}).attr('id', 'clear' + this.options.selector);
+				}).attr('id', 'clear' + this.name);
 			// calculate columns count
 			this.cols = Math.floor(this.box.width() / (this.options.width + this.options.gutter));
 			// We should always render at least one column
@@ -112,7 +81,7 @@
 			}
 			
 			
-			this.box.find($('#clear' + this.options.selector)).remove();
+			this.box.find($('#clear' + this.name)).remove();
 			// add clear float
 			this.box.append(clear);
 			this._setbreakPoints();
