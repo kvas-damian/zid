@@ -28,7 +28,11 @@
 	};
 
 	Zid.prototype = {
-
+		/**
+		 * Initialize Zid and render items in columns
+		 * @param object options - see Zid.settings
+		 * @private
+		 */
 		_init: function( options ) {
 			var container = this;
 			this.cols = 0;
@@ -52,6 +56,10 @@
 			$( window ).on( 'resize', $.debounce( 50, $.proxy( container.resize, this ) ) );
 		},
 
+		/**
+		 * Create and append columns to zid container
+		 * @private
+		 */
 		_setCols: function() {
 			var i,
 				div,
@@ -85,15 +93,32 @@
 			this.box.append( clear );
 			this._setbreakPoints();
 		},
+
+		/**
+		 * Set breakpoint on which we need to re-render whole zid
+		 * @private
+		 */
 		_setbreakPoints: function() {
 			this.maxBreakPoint = ( this.cols + 1 ) * ( this.options.width + this.options.gutter );
 			this.minBreakPoint = ( this.cols <= 1 ) ? 1 : this.cols * ( this.options.width + this.options.gutter );
 		},
+
+		/**
+		 * Get width style for zid column
+		 * @returns {string}
+		 * @private
+		 */
 		_getColumnWidthStyle: function() {
 			return 'calc(' + ( 100 / this.cols ) + '% - ' +
 				( ( ( this.cols - 1 ) * this.options.gutter ) / this.cols ) + 'px )';
 		},
 
+		/**
+		 * Render items in zid
+		 * @param String method - 'append' or 'prepend'
+		 * @param Array arr array of items that should be added to zid
+		 * @private
+		 */
 		_renderItems: function( method, arr ) {
 			// push out the items to the columns
 			$.each( arr, $.proxy(
@@ -111,6 +136,11 @@
 			));
 		},
 
+		/**
+		 * Get lowest columns from zid columns.
+		 * In most cases this is the column when we're going to add next item
+		 * @private
+		 */
 		_getLowestColumn: function() {
 			var lowest = this.columns[ 0 ],
 				lowestHeight = lowest.height();
@@ -126,6 +156,9 @@
 			return lowest;
 		},
 
+		/**
+		 * repaint whole zid
+		 */
 		repaint: function() {
 			// hide columns in box
 			var oldCols = this.box.find( $( '.zidcolumn' ) );
@@ -139,6 +172,9 @@
 			oldCols.remove();
 		},
 
+		/**
+		 * Window resize callback. When we reach breakpoint then it repaints zid
+		 */
 		resize: function() {
 			var boxWidth = this.box.width();
 			if ( boxWidth < this.minBreakPoint || boxWidth >= this.maxBreakPoint ) {
@@ -146,11 +182,19 @@
 			}
 		},
 
+		/**
+		 * Add new elements to zid at the end
+		 * @param items
+		 */
 		append: function( items ) {
 			this.itemsArr = this.itemsArr.concat( $.makeArray( items ) );
 			this._renderItems( 'append', items );
 		},
 
+		/**
+		 * Add elements to zid at the beginning
+		 * @param items
+		 */
 		prepend: function( items ) {
 			this.itemsArr = $.makeArray( items ).concat( this.itemsArr );
 			this._renderItems( 'prepend', items );
