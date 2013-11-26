@@ -2,7 +2,7 @@ jQuery zid
 ===
 https://github.com/kvas-damian/zid/
 
-Version: 0.8
+Version: 0.9
 
 Dependencies:
 jQuery throttle plugin: http://benalman.com/projects/jquery-throttle-debounce-plugin/
@@ -24,6 +24,7 @@ Params
 * minColumnWidth - minimal column width in px
 * gutter - gutter in px
 * throttleThreshold - delay time in ms for throttle plugin
+* onColumnCountChangeCallback - event fired on column count change; has two params: columns' count and array of elements
 
 Example usage
 ===
@@ -32,7 +33,10 @@ $('#someId').zid({
   minColumnWidth: 350, 
   selector: '.class, .classTwo',
   gutter: 30,
-  throttleThreshold: 100
+  throttleThreshold: 100,
+  onColumnCountChangeCallback: function ( columnsCount, elements ) {
+	// do some stuff with elements
+  }
 });
 ````
 
